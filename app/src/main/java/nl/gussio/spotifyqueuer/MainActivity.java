@@ -3,7 +3,14 @@ package nl.gussio.spotifyqueuer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.spotify.android.appremote.api.ConnectionParams;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static final String CLIENT_ID = "51c1a7b0c4bc499698b10eb15bfeaad3";
+    private static final String REDIRECT_URI = "nl.gussio.spotifyqueuer://callback";
+    private SpotifyAppRemote mSpotifyAppRemote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,7 +21,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // We will start writing our code here.
+        ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
+                .setRedirectUri(REDIRECT_URI)
+                .showAuthView(true)
+                .build();
+
     }
 
     private void connected() {
