@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SpotifyQueuer</string>
+    <string name="noClientInfoFound">No client info found.</string>
 </resources>
