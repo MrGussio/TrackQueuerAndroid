@@ -1,8 +1,12 @@
 package nl.gussio.spotifyqueuer;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -15,6 +19,7 @@ import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.mappers.gson.GsonMapper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "51c1a7b0c4bc499698b10eb15bfeaad3";
     private static final String REDIRECT_URI = "nl.gussio.spotifyqueuer://callback";
+    private static final String HEAD_URI = "https://api.gussio.nl/";
     private SpotifyAppRemote remote;
 
     private RequestQueue queue;
@@ -42,6 +48,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         queue = Volley.newRequestQueue(this);
+
+        findViewById(R.id.shareButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_TEXT, "https://api.gussio.nl/addtrack?uri="+uri);
+                intent.setType("text/plain");
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pullSongs();
+            }
+        });
     }
 
     @Override
@@ -81,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 fis.close();
                 JSONObject obj = new JSONObject(jsonOutput).getJSONObject("key");
                 created = obj.getLong("created");
-                if(created+1000*60*60*8 > System.currentTimeMillis()) { //Validate experation time
+                if(created*1000+1000*60*60*8 > System.currentTimeMillis()) { //Validate experation time
                     uri = obj.getString("uri");
                     privatekey = obj.getString("privatekey");
                     validKey();
@@ -95,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }else{
-            StringRequest request = new StringRequest(Request.Method.GET, "https://api.gussio.nl/?newclient", new Response.Listener<String>() {
+            StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI+"?newclient", new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
                     try {
@@ -121,7 +145,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void validKey(){
-
+        TextView uriText = findViewById(R.id.uriText);
+        uriText.setText(uri);
+        pullSongs();
     }
 
     @Override
@@ -130,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         SpotifyAppRemote.CONNECTOR.disconnect(remote);
     }
 
-    public void saveData(){
+    private void saveData(){
         try {
             JSONObject data = new JSONObject();
             JSONObject key = new JSONObject();
@@ -149,6 +175,33 @@ public class MainActivity extends AppCompatActivity {
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void pullSongs(){
+        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI + "addtrack?uri=" + uri + "&privatekey=" + privatekey + "&pullsongs", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject obj = new JSONObject(response);
+                    if(obj.has("tracks")){
+                        JSONArray tracks = obj.getJSONArray("tracks");
+                        for(int i = 0; i < tracks.length(); i++){
+                            JSONObject track = tracks.getJSONObject(i);
+                            remote.getPlayerApi().queue("spotify:track:"+track.getString("trackid"));
+                            Toast.makeText(getApplicationContext(), R.string.pullSongsSuccess, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                } catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+            }
+        });
+        queue.add(request);
     }
 
 }

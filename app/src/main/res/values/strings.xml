@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">SpotifyQueuer</string>
     <string name="noClientInfoFound">No client info found.</string>
+    <string name="uriTitle">Your queue ID:</string>
+    <string name="share">Share</string>
+    <string name="pullSongsError">Error while retrieving queue.</string>
+    <string name="refreshButton">Refresh</string>
+    <string name="pullSongsSuccess">Succesfully updated queue.</string>
 </resources>
