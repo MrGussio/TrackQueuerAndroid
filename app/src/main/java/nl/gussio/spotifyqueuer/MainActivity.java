@@ -1,31 +1,47 @@
 package nl.gussio.spotifyqueuer;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.mappers.gson.GsonMapper;
 
-public class MainActivity extends AppCompatActivity implements DownloadCallback<String> {
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "51c1a7b0c4bc499698b10eb15bfeaad3";
     private static final String REDIRECT_URI = "nl.gussio.spotifyqueuer://callback";
     private SpotifyAppRemote remote;
 
-    private NetworkFragment mNetworkFragment;
-    private boolean mDownloading = false;
+    private RequestQueue queue;
+
+    private String uri;
+    private String privatekey;
+    private long created;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), "https://api.gussio.nl/?newclient");
+        queue = Volley.newRequestQueue(this);
     }
 
     @Override
@@ -52,7 +68,60 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback<
     }
 
     private void connected() {
-        mNetworkFragment.startDownload();
+        File file = new File(getFilesDir(), "keys");
+        if(file.exists()){
+            try {
+                FileInputStream fis = new FileInputStream(file);
+                Scanner s = new Scanner(fis);
+                String jsonOutput = "";
+                while(s.hasNextLine()) {
+                    jsonOutput += s.nextLine();
+                }
+                s.close();
+                fis.close();
+                JSONObject obj = new JSONObject(jsonOutput).getJSONObject("key");
+                created = obj.getLong("created");
+                if(created+1000*60*60*8 > System.currentTimeMillis()) { //Validate experation time
+                    uri = obj.getString("uri");
+                    privatekey = obj.getString("privatekey");
+                    validKey();
+                }
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }else{
+            StringRequest request = new StringRequest(Request.Method.GET, "https://api.gussio.nl/?newclient", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        JSONObject json = new JSONObject(response);
+                        if(json.has("uri") && json.has("privatekey"))
+                        uri = json.getString("uri");
+                        privatekey = json.getString("privatekey");
+                        created = json.getLong("created");
+                        saveData();
+                        validKey();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d("SpotifyQueuer", "error: "+error);
+                }
+            });
+            queue.add(request);
+        }
+    }
+
+    private void validKey(){
+
     }
 
     @Override
@@ -61,46 +130,25 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback<
         SpotifyAppRemote.CONNECTOR.disconnect(remote);
     }
 
-    @Override
-    public void updateFromDownload(String result) {
-        Log.d("SpotifyQueuer", result);
-    }
-
-    @Override
-    public NetworkInfo getActiveNetworkInfo() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo;
-    }
-
-    @Override
-    public void onProgressUpdate(int progressCode, int percentComplete) {
-        switch(progressCode) {
-            // You can add UI behavior for progress updates here.
-            case Progress.ERROR:
-                Log.d("SpotifyQueuer", "Error while retreiving data.");
-                break;
-            case Progress.CONNECT_SUCCESS:
-                Log.d("SpotifyQueuer", "Succesfully connected.");
-                break;
-            case Progress.GET_INPUT_STREAM_SUCCESS:
-                Log.d("SpotifyQueuer", "Succesfully retreived input stream.");
-                break;
-            case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
-                Log.d("SpotifyQueuer", "Processing input stream...");
-                break;
-            case Progress.PROCESS_INPUT_STREAM_SUCCESS:
-                Log.d("SpotifyQueuer", "Succesfully processed input stream.");
-                break;
+    public void saveData(){
+        try {
+            JSONObject data = new JSONObject();
+            JSONObject key = new JSONObject();
+            key.put("uri", uri);
+            key.put("privatekey", privatekey);
+            key.put("created", created);
+            data.put("key", key);
+            FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "keys"));
+            fos.write(data.toString().getBytes());
+            fos.flush();
+            fos.close();
+        }catch (JSONException e){
+            e.printStackTrace();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 
-    @Override
-    public void finishDownloading() {
-        mDownloading = false;
-        if (mNetworkFragment != null) {
-            mNetworkFragment.cancelDownload();
-        }
-    }
 }
