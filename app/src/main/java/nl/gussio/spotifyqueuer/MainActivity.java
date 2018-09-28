@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_TEXT, "https://api.gussio.nl/addtrack?uri="+uri);
+                intent.putExtra(Intent.EXTRA_TEXT, HEAD_URI+"?uri="+uri);
                 intent.setType("text/plain");
                 startActivity(intent);
             }
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
             refresh.setClickable(false);
             refresh.setText(R.string.refreshing);
         }
-        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI + "addtrack?uri=" + uri + "&privatekey=" + privatekey + "&pullsongs", new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI + "request.php?uri=" + uri + "&privatekey=" + privatekey + "&pullsongs", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void newUri(){
-        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI+"?newclient", new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI+"request.php?newclient", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
