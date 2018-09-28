@@ -7,31 +7,21 @@
     tools:context="nl.gussio.spotifyqueuer.MainActivity">
 
     <TextView
-        android:id="@+id/clientInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/noClientInfoFound"
-        android:textSize="18sp" />
-
-    <TextView
         android:id="@+id/uriText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/uriTitle"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="146dp"
-        android:text="TextView"
+        android:text="@string/loading"
         android:textSize="30sp" />
 
     <TextView
         android:id="@+id/uriTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/uriText"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="-146dp"
+        android:layout_marginTop="51dp"
         android:text="@string/uriTitle" />
 
     <Button
@@ -46,9 +36,16 @@
         android:id="@+id/refreshButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/shareButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="209dp"
         android:text="@string/refreshButton" />
+
+    <Button
+        android:id="@+id/newUri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/refreshButton"
+        android:layout_centerHorizontal="true"
+        android:text="@string/newQueue" />
 
 </RelativeLayout>
