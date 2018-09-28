@@ -5,7 +5,7 @@
     <string name="share">Share</string>
     <string name="pullSongsError">Error while retrieving queue.</string>
     <string name="refreshButton">Refresh queue</string>
-    <string name="pullSongsSuccess">Succesfully updated queue.</string>
+    <string name="pullSongsSuccess">Successfully updated queue.</string>
     <string name="refreshing">Refreshing...</string>
     <string name="loading">Loading...</string>
     <string name="newQueue">New queue</string>
