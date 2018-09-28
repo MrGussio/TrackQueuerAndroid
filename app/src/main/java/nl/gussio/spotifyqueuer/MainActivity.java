@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -113,6 +114,18 @@ public class MainActivity extends AppCompatActivity {
                         }).setNegativeButton(R.string.no, null).show();
             }
         });
+
+        final Switch autoRefresh = findViewById(R.id.autoRefreshSwitch);
+        autoRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(autoRefresh.isChecked()){
+                    startTimer();
+                }else{
+                    stopTimer();
+                }
+            }
+        });
     }
 
     private void connected() {
@@ -151,14 +164,7 @@ public class MainActivity extends AppCompatActivity {
     private void validKey(){
         TextView uriText = findViewById(R.id.uriText);
         uriText.setText(uri);
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                pullSongs(false);
-            }
-        };
-        timer = new Timer();
-        timer.scheduleAtFixedRate(timerTask, 0, 10000);
+        startTimer();
     }
 
     @Override
@@ -170,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         SpotifyAppRemote.CONNECTOR.disconnect(remote);
-        timer.cancel();
+        stopTimer();
     }
 
     private void saveData(){
@@ -258,6 +264,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         queue.add(request);
+    }
+
+    private void startTimer(){
+        stopTimer();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                pullSongs(false);
+            }
+        };
+        timer = new Timer();
+        timer.scheduleAtFixedRate(timerTask, 0, 10000);
+    }
+
+    private void stopTimer(){
+        if(timer != null)
+            timer.cancel();
     }
 
 }

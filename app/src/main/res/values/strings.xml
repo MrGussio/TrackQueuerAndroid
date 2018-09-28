@@ -14,4 +14,5 @@
     <string name="no">No</string>
     <string name="syncServiceStarted">SpotifyQueuer has started syncing your queue.</string>
     <string name="syncServiceStopped">SpotifyQueuer has stopped syncing your queue.</string>
+    <string name="autoRefresh">Auto Refresh</string>
 </resources>
