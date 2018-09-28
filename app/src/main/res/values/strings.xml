@@ -4,6 +4,14 @@
     <string name="uriTitle">Your queue ID:</string>
     <string name="share">Share</string>
     <string name="pullSongsError">Error while retrieving queue.</string>
-    <string name="refreshButton">Refresh</string>
+    <string name="refreshButton">Refresh queue</string>
     <string name="pullSongsSuccess">Succesfully updated queue.</string>
+    <string name="refreshing">Refreshing...</string>
+    <string name="loading">Loading...</string>
+    <string name="newQueue">New queue</string>
+    <string name="newQueueConfirmMessage">Are you sure you want to create a new queue? This means your current queue will be deleted.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="syncServiceStarted">SpotifyQueuer has started syncing your queue.</string>
+    <string name="syncServiceStopped">SpotifyQueuer has stopped syncing your queue.</string>
 </resources>

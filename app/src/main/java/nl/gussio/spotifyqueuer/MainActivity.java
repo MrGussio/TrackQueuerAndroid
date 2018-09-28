@@ -1,10 +1,18 @@
 package nl.gussio.spotifyqueuer;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +37,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,34 +48,20 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyAppRemote remote;
 
     private RequestQueue queue;
+    private static int jobID = 0;
 
     private String uri;
     private String privatekey;
     private long created;
+
+    private TimerTask timerTask;
+    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         queue = Volley.newRequestQueue(this);
-
-        findViewById(R.id.shareButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_TEXT, "https://api.gussio.nl/addtrack?uri="+uri);
-                intent.setType("text/plain");
-                startActivity(intent);
-            }
-        });
-
-        findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pullSongs();
-            }
-        });
     }
 
     @Override
@@ -87,6 +83,39 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Throwable throwable) {
                 Log.e("Debugger", throwable.getMessage(), throwable);
+            }
+        });
+
+        findViewById(R.id.shareButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_TEXT, "https://api.gussio.nl/addtrack?uri="+uri);
+                intent.setType("text/plain");
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.refreshButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pullSongs(true);
+            }
+        });
+
+        findViewById(R.id.newUri).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(R.string.newQueue)
+                        .setMessage(R.string.newQueueConfirmMessage)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                newUri();
+                            }
+                        }).setNegativeButton(R.string.no, null).show();
             }
         });
     }
@@ -118,42 +147,35 @@ public class MainActivity extends AppCompatActivity {
             }catch (IOException e){
                 e.printStackTrace();
             }
-        }else{
-            StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI+"?newclient", new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    try {
-                        JSONObject json = new JSONObject(response);
-                        if(json.has("uri") && json.has("privatekey"))
-                        uri = json.getString("uri");
-                        privatekey = json.getString("privatekey");
-                        created = json.getLong("created");
-                        saveData();
-                        validKey();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("SpotifyQueuer", "error: "+error);
-                }
-            });
-            queue.add(request);
+        }
+        if(uri == null || privatekey == null){
+           newUri();
         }
     }
 
     private void validKey(){
         TextView uriText = findViewById(R.id.uriText);
         uriText.setText(uri);
-        pullSongs();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                pullSongs(false);
+            }
+        };
+        timer = new Timer();
+        timer.scheduleAtFixedRate(timerTask, 0, 10000);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         SpotifyAppRemote.CONNECTOR.disconnect(remote);
+        timer.cancel();
     }
 
     private void saveData(){
@@ -177,7 +199,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void pullSongs(){
+    private void pullSongs(final boolean foreground){
+        Log.d("SpotifyQueuer", "Pulling songs");
+        final Button refresh = findViewById(R.id.refreshButton);
+        if(foreground) {
+            refresh.setClickable(false);
+            refresh.setText(R.string.refreshing);
+        }
         StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI + "addtrack?uri=" + uri + "&privatekey=" + privatekey + "&pullsongs", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -194,11 +222,44 @@ public class MainActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
                 }
+                if(foreground) {
+                    refresh.setClickable(true);
+                    refresh.setText(R.string.refreshButton);
+                }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+                if(foreground) {
+                    Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+                    refresh.setClickable(true);
+                    refresh.setText(R.string.refreshButton);
+                }
+            }
+        });
+        queue.add(request);
+    }
+
+    public void newUri(){
+        StringRequest request = new StringRequest(Request.Method.GET, HEAD_URI+"?newclient", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject json = new JSONObject(response);
+                    if(json.has("uri") && json.has("privatekey"))
+                        uri = json.getString("uri");
+                    privatekey = json.getString("privatekey");
+                    created = json.getLong("created");
+                    saveData();
+                    validKey();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("SpotifyQueuer", "error: "+error);
             }
         });
         queue.add(request);
