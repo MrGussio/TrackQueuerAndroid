@@ -48,4 +48,13 @@
         android:layout_centerHorizontal="true"
         android:text="@string/newQueue" />
 
+    <Switch
+        android:id="@+id/autoRefreshSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/newUri"
+        android:layout_centerHorizontal="true"
+        android:checked="true"
+        android:text="@string/autoRefresh" />
+
 </RelativeLayout>
