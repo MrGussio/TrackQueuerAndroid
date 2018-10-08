@@ -1,4 +1,4 @@
-package nl.gussio.spotifyqueuer;
+package nl.gussio.trackqueuer;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

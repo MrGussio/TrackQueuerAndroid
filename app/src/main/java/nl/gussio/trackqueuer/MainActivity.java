@@ -1,4 +1,4 @@
-package nl.gussio.spotifyqueuer;
+package nl.gussio.trackqueuer;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -39,7 +39,7 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "51c1a7b0c4bc499698b10eb15bfeaad3";
-    private static final String REDIRECT_URI = "nl.gussio.spotifyqueuer://callback";
+    private static final String REDIRECT_URI = "nl.gussio.trackqueuer://callback";
     private static final String HEAD_URI = "https://api.gussio.nl/";
     private SpotifyAppRemote remote;
 
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pullSongs(final boolean foreground){
-        Log.d("SpotifyQueuer", "Pulling songs");
+        Log.d("TrackQueuer", "Pulling songs");
         final Button refresh = findViewById(R.id.refreshButton);
         if(foreground) {
             refresh.setClickable(false);
@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("SpotifyQueuer", "error: "+error);
+                Log.d("TrackQueuer", "error: "+error);
             }
         });
         queue.add(request);
