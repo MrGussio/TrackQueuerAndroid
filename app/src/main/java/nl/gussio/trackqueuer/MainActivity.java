@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyAppRemote remote;
 
     private RequestQueue queue;
-    private static int jobID = 0;
 
     private String uri;
     private String privatekey;
