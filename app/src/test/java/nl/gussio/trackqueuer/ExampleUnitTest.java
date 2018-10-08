@@ -1,4 +1,4 @@
-package nl.gussio.spotifyqueuer;
+package nl.gussio.trackqueuer;
 
 import org.junit.Test;
 
