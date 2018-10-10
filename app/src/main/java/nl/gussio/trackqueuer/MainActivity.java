@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "51c1a7b0c4bc499698b10eb15bfeaad3";
     private static final String REDIRECT_URI = "nl.gussio.trackqueuer://callback";
-    private static final String HEAD_URI = "https://api.gussio.nl/";
+    private static final String HEAD_URI = "https://trackqueuer.com/";
     private SpotifyAppRemote remote;
 
     private RequestQueue queue;
@@ -146,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
                     privatekey = obj.getString("privatekey");
                     validKey();
                 }
-
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
