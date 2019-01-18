@@ -9,31 +9,26 @@
 
     <color name="intro_bg_1">#f64c73</color>
     <color name="intro_bg_2">#20d2bb</color>
-    <color name="intro_bg_n3">#3395ff</color>
-    <color name="intro_bg_4">#c873f4</color>
+    <color name="intro_bg_3">#3395ff</color>
 
     <color name="intro_dot_dark_1">#d1395c</color>
     <color name="intro_dot_dark_2">#14a895</color>
     <color name="intro_dot_dark_3">#2278d4</color>
-    <color name="intro_dot_dark_4">#a854d4</color>
 
     <color name="intro_dot_light_1">#f98da5</color>
     <color name="intro_dot_light_2">#8cf9eb</color>
     <color name="intro_dot_light_3">#93c6fd</color>
-    <color name="intro_dot_light_4">#e4b5fc</color>
 
 
     <array name="array_dot_active">
         <item>@color/intro_dot_light_1</item>
         <item>@color/intro_dot_light_2</item>
         <item>@color/intro_dot_light_3</item>
-        <item>@color/intro_dot_light_4</item>
     </array>
 
     <array name="array_dot_inactive">
         <item>@color/intro_dot_dark_1</item>
         <item>@color/intro_dot_dark_2</item>
         <item>@color/intro_dot_dark_3</item>
-        <item>@color/intro_dot_dark_4</item>
     </array>
 </resources>
