@@ -5,17 +5,19 @@
     <color name="colorAccent">#1c7d3e</color>
     <color name="nav">#000000</color>
 
+    <color name="white">#FFFFFF</color>
+
     <color name="black_overlay">#66000000</color>
 
-    <color name="intro_bg_1">#f64c73</color>
+    <color name="intro_bg_1">#00831D</color>
     <color name="intro_bg_2">#20d2bb</color>
     <color name="intro_bg_3">#3395ff</color>
 
-    <color name="intro_dot_dark_1">#d1395c</color>
-    <color name="intro_dot_dark_2">#14a895</color>
+    <color name="intro_dot_dark_1">#0F3F00</color>
+    <color name="intro_dot_dark_2">#0F3F00</color>
     <color name="intro_dot_dark_3">#2278d4</color>
 
-    <color name="intro_dot_light_1">#f98da5</color>
+    <color name="intro_dot_light_1">#1A6403</color>
     <color name="intro_dot_light_2">#8cf9eb</color>
     <color name="intro_dot_light_3">#93c6fd</color>
 
