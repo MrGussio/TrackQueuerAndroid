@@ -3,6 +3,7 @@ package nl.gussio.trackqueuer;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -18,6 +19,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+
 public class IntroActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
@@ -27,6 +30,8 @@ public class IntroActivity extends AppCompatActivity {
     private int[] layouts;
     private Button skipButton, nextButton;
     private PrefManager prefManager;
+
+    private final String SPOTIFY_STORE_ID = "com.spotify.music";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,37 +52,58 @@ public class IntroActivity extends AppCompatActivity {
         skipButton =  findViewById(R.id.intro_skip);
         nextButton = findViewById(R.id.intro_next);
 
-        layouts = new int[]{
-                R.layout.intro_slide_1,
-                R.layout.intro_slide_2,
-                R.layout.intro_slide_3,
-        };
+        if(SpotifyAppRemote.isSpotifyInstalled(getApplicationContext())) {
+            layouts = new int[]{
+                    R.layout.intro_slide_1,
+                    R.layout.intro_slide_2,
+                    R.layout.intro_slide_3,
+            };
 
-        addBottomDots(0);
-//        changeStatusBarColor();
+            skipButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    launchMain();
+                }
+            });
 
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int current = getItem(+1);
+                    if(current < layouts.length){
+                        viewPager.setCurrentItem(current);
+                    }else{
+                        launchMain();
+                    }
+                }
+            });
+        }else{
+            layouts = new int[]{
+                    R.layout.intro_slide_no_spotify
+            };
+            skipButton.setText(R.string.refresh);
+            skipButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(getApplicationContext(), IntroActivity.class);
+                    startActivity(i);
+                }
+            });
+            nextButton.setText(R.string.download);
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + SPOTIFY_STORE_ID)));
+                    } catch (android.content.ActivityNotFoundException anfe) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + SPOTIFY_STORE_ID)));
+                    }
+                }
+            });
+        }
         myViewPagerAdapter = new MyViewPagerAdapter();
         viewPager.setAdapter(myViewPagerAdapter);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
-
-        skipButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchMain();
-            }
-        });
-
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int current = getItem(+1);
-                if(current < layouts.length){
-                    viewPager.setCurrentItem(current);
-                }else{
-                    launchMain();
-                }
-            }
-        });
     }
 
     private void launchMain(){
@@ -105,14 +131,6 @@ public class IntroActivity extends AppCompatActivity {
             dots[currentPage].setTextColor(colorsActive[currentPage]);
     }
 
-    private void changeStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.TRANSPARENT);
-        }
-    }
-
     private int getItem(int i) {
         return viewPager.getCurrentItem() + i;
     }
@@ -122,14 +140,10 @@ public class IntroActivity extends AppCompatActivity {
         @Override
         public void onPageSelected(int position) {
             addBottomDots(position);
-
-            // changing the next button text 'NEXT' / 'GOT IT'
             if (position == layouts.length - 1) {
-                // last page. make button text to GOT IT
                 nextButton.setText(getString(R.string.got_it));
                 skipButton.setVisibility(View.GONE);
             } else {
-                // still pages are left
                 nextButton.setText(getString(R.string.next));
                 skipButton.setVisibility(View.VISIBLE);
             }
