@@ -57,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         queue = Volley.newRequestQueue(this);
+
+        PrefManager manager = new PrefManager(this);
+        if(manager.isFirstLaunch()){
+            Intent i = new Intent(getApplicationContext(), IntroActivity.class);
+            startActivity(i);
+        }
     }
 
     @Override
