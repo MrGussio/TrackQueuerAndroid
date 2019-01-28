@@ -16,14 +16,14 @@
     <string name="syncServiceStopped">TrackQueuer has stopped syncing your queue.</string>
     <string name="autoRefresh">Auto Refresh</string>
 
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="next">Next</string>
     <string name="skip">Skip</string>
     <string name="got_it">Got it!</string>
     <string name="intro_title_1">Thanks for downloading!</string>
     <string name="intro_desc_1">Using TrackQueuer, you can let other people add songs to your Spotfiy queue.</string>
+    <string name="intro_desc_1_no_spotify">To use TrackQueuer, you first need the Spotify app to continue.</string>
+    <string name="download">Download</string>
+    <string name="refresh">Refresh</string>
     <string name="intro_title_2">Log in using Spotify</string>
     <string name="intro_desc_2">Start by authorizing our app by logging in into your Spotify account, so we are able to add songs to your queue.</string>
     <string name="intro_title_3">Share the link!</string>

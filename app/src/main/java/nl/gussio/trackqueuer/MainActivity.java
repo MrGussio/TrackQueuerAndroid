@@ -55,14 +55,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        queue = Volley.newRequestQueue(this);
-
         PrefManager manager = new PrefManager(this);
+        if(!SpotifyAppRemote.isSpotifyInstalled(getApplicationContext()))
+            manager.setFirstLaunch(true);
         if(manager.isFirstLaunch()){
             Intent i = new Intent(getApplicationContext(), IntroActivity.class);
             startActivity(i);
         }
+        setContentView(R.layout.activity_main);
+        queue = Volley.newRequestQueue(this);
     }
 
     @Override
