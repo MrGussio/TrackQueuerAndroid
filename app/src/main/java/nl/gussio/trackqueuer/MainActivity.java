@@ -3,6 +3,7 @@ package nl.gussio.trackqueuer;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -84,7 +85,25 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable throwable) {
-                Log.e("Debugger", throwable.getMessage(), throwable);
+                if(throwable.getMessage().contains("logged in")){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_DayNight_Dialog_Alert);
+                    builder.setTitle("Not logged in")
+                            .setMessage("Your Spotify is not logged in. For this app to work, you have to be logged in.")
+                            .setPositiveButton("Log in", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Uri location = Uri.parse("spotify:");
+                                    Intent toSpotify = new Intent(Intent.ACTION_VIEW, location);
+                                    startActivity(toSpotify);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    finish();
+                                }
+                            }).show();
+                }
             }
         });
 
