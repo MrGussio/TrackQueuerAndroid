@@ -15,6 +15,10 @@
     <string name="syncServiceStarted">TrackQueuer has started syncing your queue.</string>
     <string name="syncServiceStopped">TrackQueuer has stopped syncing your queue.</string>
     <string name="autoRefresh">Auto Refresh</string>
+    <string name="loggedOut">Not logged in</string>
+    <string name="loggedOutDesc">Your Spotify is not logged in. For this app to work, you have to be logged in.</string>
+    <string name="login">Log in</string>
+    <string name="cancel">Cancel</string>
 
     <string name="next">Next</string>
     <string name="skip">Skip</string>

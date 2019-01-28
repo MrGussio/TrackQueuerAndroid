@@ -87,9 +87,9 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Throwable throwable) {
                 if(throwable.getMessage().contains("logged in")){
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_DayNight_Dialog_Alert);
-                    builder.setTitle("Not logged in")
-                            .setMessage("Your Spotify is not logged in. For this app to work, you have to be logged in.")
-                            .setPositiveButton("Log in", new DialogInterface.OnClickListener() {
+                    builder.setTitle(R.string.loggedOut)
+                            .setMessage(R.string.loggedOutDesc)
+                            .setPositiveButton(R.string.login, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     Uri location = Uri.parse("spotify:");
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                                     startActivity(toSpotify);
                                 }
                             })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     finish();
