@@ -1,26 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'trackqueuer'
-            storeFile file('C:/Users/jelle/Documents/Android Keystores/keystore.jks')
-        }
-    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "nl.gussio.trackqueuer"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "1.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
     }
 }
@@ -31,7 +24,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:support-v4:26.1.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.andtraroid.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.6.1'
@@ -39,4 +32,5 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     implementation 'com.android.volley:volley:1.1.1'
+    implementation 'com.android.support:support-annotations:28.0.0'
 }
