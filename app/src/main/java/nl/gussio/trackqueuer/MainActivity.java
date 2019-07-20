@@ -3,12 +3,18 @@ package nl.gussio.trackqueuer;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +28,7 @@ import com.android.volley.toolbox.Volley;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.spotify.android.appremote.internal.SpotifyLocator;
 import com.spotify.protocol.mappers.gson.GsonMapper;
 
 import org.json.JSONArray;
@@ -33,6 +40,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -153,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void connected() {
+    private void connected(){
         File file = new File(getFilesDir(), "keys");
         if(file.exists()){
             try {
@@ -183,6 +192,13 @@ public class MainActivity extends AppCompatActivity {
         if(uri == null || privatekey == null){
            newUri();
         }
+
+        ListView historyList = findViewById(R.id.historyList);
+        ArrayList<String> array = getHistory();
+        if(array.isEmpty())
+            array.add("No history found.");
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, array);
+        historyList.setAdapter(arrayAdapter);
     }
 
     private void validKey(){
@@ -224,6 +240,55 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private ArrayList<String> getHistory(){
+        File historyFile = new File(getFilesDir(), "history");
+        ArrayList<String> output = new ArrayList<>();
+        if(historyFile.exists()){
+            try {
+                FileInputStream fis = new FileInputStream(historyFile);
+                Scanner s = new Scanner(fis);
+                String outputJson = "";
+                while(s.hasNextLine())
+                    outputJson += s.nextLine();
+                s.close();
+                fis.close();
+                JSONObject object = new JSONObject(outputJson);
+                JSONArray history = object.getJSONArray("history");
+                for(int i = 0; i < history.length(); i++){
+                    output.add(history.getString(i));
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return output;
+    }
+
+    private void addHistory(String track){
+        ArrayList<String> history = getHistory();
+        history.add(track);
+        try {
+            JSONArray array = new JSONArray(history);
+            JSONObject object = new JSONObject();
+            object.put("history", array);
+            FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "keys"));
+            fos.write(object.toString().getBytes());
+            fos.flush();
+            fos.close();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void pullSongs(final boolean foreground){
         Log.d("TrackQueuer", "Pulling songs");
         final Button refresh = findViewById(R.id.refreshButton);
@@ -242,10 +307,12 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject track = tracks.getJSONObject(i);
                             remote.getPlayerApi().queue("spotify:track:"+track.getString("trackid"));
                             Toast.makeText(getApplicationContext(), R.string.pullSongsSuccess, Toast.LENGTH_SHORT).show();
+                            addHistory(track.getString("name"));
                         }
                     }
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
                 if(foreground) {
                     refresh.setClickable(true);

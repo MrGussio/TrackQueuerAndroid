@@ -32,4 +32,5 @@
     <string name="intro_desc_2">Start by authorizing our app by logging in into your Spotify account, so we are able to add songs to your queue.</string>
     <string name="intro_title_3">Share the link!</string>
     <string name="intro_desc_3">When they click on it, they can look up songs in the Spotify library and then add them to your Spotify queue!</string>
+    <string name="history">History</string>
 </resources>
