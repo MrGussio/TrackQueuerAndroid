@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
 
     private TimerTask timerTask;
     private Timer timer;
+
+    private ListView historyList;
+    private ArrayList<String> history;
+    private ArrayAdapter<String> historyAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void connected() {
+    private void connected(){
         File file = new File(getFilesDir(), "keys");
         if(file.exists()){
             try {
@@ -183,6 +190,11 @@ public class MainActivity extends AppCompatActivity {
         if(uri == null || privatekey == null){
            newUri();
         }
+
+        historyList = findViewById(R.id.historyList);
+        history = getHistory();
+        historyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, history);
+        historyList.setAdapter(historyAdapter);
     }
 
     private void validKey(){
@@ -224,6 +236,54 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private ArrayList<String> getHistory(){
+        File historyFile = new File(getFilesDir(), "history");
+        ArrayList<String> output = new ArrayList<>();
+        if(historyFile.exists()){
+            try {
+                FileInputStream fis = new FileInputStream(historyFile);
+                Scanner s = new Scanner(fis);
+                String outputJson = "";
+                while(s.hasNextLine())
+                    outputJson += s.nextLine();
+                s.close();
+                fis.close();
+                JSONObject object = new JSONObject(outputJson);
+                JSONArray history = object.getJSONArray("history");
+                for(int i = 0; i < history.length(); i++){
+                    output.add(history.getString(i));
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return output;
+    }
+
+    private void addHistory(String track){
+        history.add(0, track);
+        historyAdapter.notifyDataSetChanged();
+        try {
+            JSONArray array = new JSONArray(history);
+            JSONObject object = new JSONObject();
+            object.put("history", array);
+            FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "history"));
+            fos.write(object.toString().getBytes());
+            fos.flush();
+            fos.close();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void pullSongs(final boolean foreground){
         Log.d("TrackQueuer", "Pulling songs");
         final Button refresh = findViewById(R.id.refreshButton);
@@ -236,16 +296,32 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     JSONObject obj = new JSONObject(response);
+                    Log.d("json", obj.toString());
                     if(obj.has("tracks")){
                         JSONArray tracks = obj.getJSONArray("tracks");
                         for(int i = 0; i < tracks.length(); i++){
                             JSONObject track = tracks.getJSONObject(i);
                             remote.getPlayerApi().queue("spotify:track:"+track.getString("trackid"));
+                            if(track.has("trackinfo")){
+                                JSONObject trackInfo = track.getJSONObject("trackinfo");
+                                String name = trackInfo.getString("name") + " - ";
+                                JSONArray artists = trackInfo.getJSONArray("artists");
+                                StringBuilder sb = new StringBuilder(name);
+                                for(int j = 0; j < artists.length(); j++){
+                                    sb.append(artists.get(j));
+                                    if(j != artists.length()-1)
+                                        sb.append(", ");
+                                }
+                                name = sb.toString();
+                                addHistory(name);
+                                Log.d("TrackQueuer", name);
+                            }
                             Toast.makeText(getApplicationContext(), R.string.pullSongsSuccess, Toast.LENGTH_SHORT).show();
                         }
                     }
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), R.string.pullSongsError, Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
                 if(foreground) {
                     refresh.setClickable(true);
@@ -288,6 +364,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         queue.add(request);
+        historyAdapter.clear();
+        addHistory("Queue created.");
     }
 
     private void startTimer(){
@@ -306,5 +384,4 @@ public class MainActivity extends AppCompatActivity {
         if(timer != null)
             timer.cancel();
     }
-
 }
