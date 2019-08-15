@@ -76,8 +76,7 @@
         android:layout_alignParentTop="false"
         android:layout_alignParentRight="false"
         android:layout_alignParentBottom="false"
-        android:layout_marginStart="0dp"
         android:layout_marginTop="20dp"
-        android:scrollbars="vertical" />
+        android:transcriptMode="alwaysScroll" />
 
 </RelativeLayout>

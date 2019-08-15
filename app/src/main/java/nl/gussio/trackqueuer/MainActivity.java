@@ -56,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private TimerTask timerTask;
     private Timer timer;
 
+    private ListView historyList;
+    private ArrayList<String> history;
+    private ArrayAdapter<String> historyAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,12 +191,10 @@ public class MainActivity extends AppCompatActivity {
            newUri();
         }
 
-        ListView historyList = findViewById(R.id.historyList);
-        ArrayList<String> array = getHistory();
-        if(array.isEmpty())
-            array.add("No history found.");
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, array);
-        historyList.setAdapter(arrayAdapter);
+        historyList = findViewById(R.id.historyList);
+        history = getHistory();
+        historyAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, history);
+        historyList.setAdapter(historyAdapter);
     }
 
     private void validKey(){
@@ -263,13 +265,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addHistory(String track){
-        ArrayList<String> history = getHistory();
-        history.add(track);
+        history.add(0, track);
+        historyAdapter.notifyDataSetChanged();
         try {
             JSONArray array = new JSONArray(history);
             JSONObject object = new JSONObject();
             object.put("history", array);
-            FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "keys"));
+            FileOutputStream fos = new FileOutputStream(new File(getFilesDir(), "history"));
             fos.write(object.toString().getBytes());
             fos.flush();
             fos.close();
@@ -280,7 +282,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private void pullSongs(final boolean foreground){
@@ -295,13 +296,27 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     JSONObject obj = new JSONObject(response);
+                    Log.d("json", obj.toString());
                     if(obj.has("tracks")){
                         JSONArray tracks = obj.getJSONArray("tracks");
                         for(int i = 0; i < tracks.length(); i++){
                             JSONObject track = tracks.getJSONObject(i);
                             remote.getPlayerApi().queue("spotify:track:"+track.getString("trackid"));
+                            if(track.has("trackinfo")){
+                                JSONObject trackInfo = track.getJSONObject("trackinfo");
+                                String name = trackInfo.getString("name") + " - ";
+                                JSONArray artists = trackInfo.getJSONArray("artists");
+                                StringBuilder sb = new StringBuilder(name);
+                                for(int j = 0; j < artists.length(); j++){
+                                    sb.append(artists.get(j));
+                                    if(j != artists.length()-1)
+                                        sb.append(", ");
+                                }
+                                name = sb.toString();
+                                addHistory(name);
+                                Log.d("TrackQueuer", name);
+                            }
                             Toast.makeText(getApplicationContext(), R.string.pullSongsSuccess, Toast.LENGTH_SHORT).show();
-                            addHistory(track.getString("name"));
                         }
                     }
                 } catch (JSONException e) {
@@ -349,6 +364,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         queue.add(request);
+        historyAdapter.clear();
+        addHistory("Queue created.");
     }
 
     private void startTimer(){
@@ -367,5 +384,4 @@ public class MainActivity extends AppCompatActivity {
         if(timer != null)
             timer.cancel();
     }
-
 }
