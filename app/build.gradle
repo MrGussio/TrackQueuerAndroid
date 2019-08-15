@@ -5,7 +5,7 @@ android {
     defaultConfig {
         applicationId "nl.gussio.trackqueuer"
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 5
         versionName "1.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
